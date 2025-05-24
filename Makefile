@@ -1,6 +1,6 @@
 # Makefile for Utils Bot v2 development
 
-.PHONY: help install install-dev setup test lint format clean run docker-build docker-run migrate
+.PHONY: help install install-dev setup lint format clean run docker-build docker-run migrate
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -16,14 +16,7 @@ install-dev: ## Install development dependencies
 
 setup: install-dev ## Set up development environment
 	pre-commit install
-	python dev_config.py
 	make migrate
-
-test: ## Run tests
-	pytest
-
-test-cov: ## Run tests with coverage
-	pytest --cov=. --cov-report=html --cov-report=term
 
 lint: ## Run linting
 	flake8 .
@@ -41,10 +34,7 @@ clean: ## Clean up temporary files
 	find . -type f -name "*.pyc" -delete
 	find . -type d -name "__pycache__" -delete
 	find . -type f -name "*.log" -delete
-	rm -rf .pytest_cache
 	rm -rf .mypy_cache
-	rm -rf htmlcov
-	rm -rf .coverage
 
 run: ## Run the bot
 	python main.py
@@ -68,8 +58,8 @@ docker-stop: ## Stop Docker Compose
 docker-logs: ## View Docker logs
 	docker-compose logs -f bot
 
-check: lint test ## Run all checks (lint + test)
+check: lint ## Run all checks
 
-ci: format-check lint test ## Run CI pipeline
+ci: format-check lint ## Run CI pipeline
 
 dev: setup run-dev ## Set up and run in development mode
