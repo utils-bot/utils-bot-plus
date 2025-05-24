@@ -1,6 +1,4 @@
-"""
-Games cog for Utils Bot v2.0
-"""
+"""Games cog for UtilsBot+"""
 
 import random
 from pathlib import Path
@@ -10,49 +8,10 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-try:
-    from config.settings import settings
-except ImportError:
-    class Settings:
-        enable_games = True
-    settings = Settings()
-
-try:
-    from core.logger import get_logger
-except ImportError:
-    import logging
-    def get_logger(name):
-        return logging.getLogger(name)
-
-try:
-    from utils.checks import requires_whitelist, cooldown
-except ImportError:
-    def requires_whitelist():
-        def decorator(func):
-            return func
-        return decorator
-    
-    def cooldown(rate, per):
-        def decorator(func):
-            _ = rate  # Suppress unused argument warning
-            _ = per   # Suppress unused argument warning
-            return func
-        return decorator
-
-try:
-    from utils.embeds import create_embed, create_error_embed, create_success_embed
-except ImportError:
-    def create_embed(title, description, color=0x00ff00):
-        embed = discord.Embed(title=title, description=description, color=color)
-        return embed
-    
-    def create_error_embed(title, description):
-        embed = discord.Embed(title=title, description=description, color=0xff0000)
-        return embed
-    
-    def create_success_embed(title, description):
-        embed = discord.Embed(title=title, description=description, color=0x00ff00)
-        return embed
+from config.settings import settings
+from core.logger import get_logger
+from utils.checks import requires_whitelist, cooldown
+from utils.embeds import create_embed, create_error_embed, create_success_embed
 
 
 class GamesCog(commands.Cog, name="Games"):
@@ -102,7 +61,6 @@ class GamesCog(commands.Cog, name="Games"):
             
         except Exception as e:
             self.logger.error("Error loading Wordle words: %s", e)
-            # Fallback to a minimal word list
             self.wordle_words = ["HELLO", "WORLD", "GAMES", "WORDS", "GUESS"]
     
     @app_commands.command(name="wordle", description="Start a game of Wordle")
@@ -112,7 +70,6 @@ class GamesCog(commands.Cog, name="Games"):
         """Start a new Wordle game"""
         user_id = interaction.user.id
         
-        # Check if user already has an active game
         if user_id in self.active_games:
             embed = create_error_embed(
                 "Game Already Active",
@@ -129,7 +86,6 @@ class GamesCog(commands.Cog, name="Games"):
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
         
-        # Create new game
         word = random.choice(self.wordle_words)
         game = WordleGame(word, interaction.user)
         self.active_games[user_id] = game
@@ -147,7 +103,6 @@ class GamesCog(commands.Cog, name="Games"):
         view = WordleView(game, self)
         await interaction.response.send_message(embed=embed, view=view)
         
-        # Store the message for updates
         game.message = await interaction.original_response()
 
 
@@ -170,7 +125,6 @@ class WordleGame:
         self.guesses.append(guess)
         self.attempts += 1
         
-        # Check if won
         if guess == self.word:
             self.is_won = True
             self.is_finished = True
@@ -185,7 +139,6 @@ class WordleGame:
         word_letters = list(self.word)
         guess_letters = list(guess)
         
-        # First pass: mark correct positions
         for i in range(5):
             if guess_letters[i] == word_letters[i]:
                 result.append("🟩")
@@ -194,12 +147,10 @@ class WordleGame:
             else:
                 result.append(None)
         
-        # Second pass: mark wrong positions
         for i in range(5):
             if result[i] is None:
                 if guess_letters[i] and guess_letters[i] in word_letters:
                     result[i] = "🟨"
-                    # Remove the letter to avoid double counting
                     word_letters[word_letters.index(guess_letters[i])] = ""
                 else:
                     result[i] = "⬛"
@@ -214,7 +165,6 @@ class WordleGame:
             formatted = self.format_guess(guess)
             board.append(f"`{guess}` {formatted}")
         
-        # Add empty rows
         for _ in range(len(self.guesses), self.max_attempts):
             board.append("`_____` ⬜⬜⬜⬜⬜")
         
@@ -265,7 +215,6 @@ class WordleView(discord.ui.View):
         
         self.game.is_finished = True
         
-        # Remove from active games
         if self.game.player.id in self.cog.active_games:
             del self.cog.active_games[self.game.player.id]
         

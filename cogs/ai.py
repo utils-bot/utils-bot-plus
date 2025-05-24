@@ -1,6 +1,4 @@
-"""
-AI commands cog for Utils Bot v2.0 using Google Gemini
-"""
+"""AI commands cog for UtilsBot+ using Google Gemini"""
 
 import asyncio
 from typing import Optional
@@ -23,10 +21,8 @@ class AICog(commands.Cog, name="AI"):
         self.bot = bot
         self.logger = get_logger(__name__)
         
-        # Configure Gemini
         if settings.gemini_api_key:
             genai.configure(api_key=settings.gemini_api_key)
-            # Use the newer Gemini 1.5 Flash model (works with free tier)
             self.model = genai.GenerativeModel('models/gemini-1.5-flash')
             self.vision_model = genai.GenerativeModel('models/gemini-1.5-flash')
         else:
@@ -65,20 +61,16 @@ class AICog(commands.Cog, name="AI"):
         await interaction.response.send_message(embed=loading_embed, ephemeral=ephemeral)
         
         try:
-            # Track API usage
             if self.bot.db:
                 await self.bot.db.track_api_usage(interaction.user.id, "gemini")
             
-            # Generate response
             response = await asyncio.to_thread(
                 self.model.generate_content,
                 question
             )
             
-            # Format response with question at top, answer below
             answer = response.text
             
-            # Truncate if too long for Discord
             if len(answer) > 3800:
                 answer = answer[:3800] + "\n\n... (truncated)"
             
@@ -113,7 +105,6 @@ class AICog(commands.Cog, name="AI"):
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
         
-        # Create modal for chat input
         modal = ChatModal(self.model, self.bot, interaction.user)
         await interaction.response.send_modal(modal)
 
@@ -144,11 +135,9 @@ class ChatModal(discord.ui.Modal, title="Chat with Gemini AI"):
         await interaction.response.send_message(embed=loading_embed, ephemeral=True)
         
         try:
-            # Track API usage
             if self.bot.db:
                 await self.bot.db.track_api_usage(self.user.id, "gemini")
             
-            # Generate response
             response = await asyncio.to_thread(
                 self.model.generate_content,
                 self.message.value
@@ -156,7 +145,6 @@ class ChatModal(discord.ui.Modal, title="Chat with Gemini AI"):
             
             answer = response.text
             
-            # Truncate if too long
             if len(answer) > 4000:
                 answer = answer[:4000] + "\n\n... (truncated)"
             
@@ -171,7 +159,6 @@ class ChatModal(discord.ui.Modal, title="Chat with Gemini AI"):
                 inline=False
             )
             
-            # Add continue chat button
             view = ContinueChatView(self.model, self.bot, self.user)
             
             await interaction.edit_original_response(embed=embed, view=view)
@@ -222,9 +209,9 @@ class ContinueChatView(discord.ui.View):
             color=assets.SUCCESS_COLOR
         )
         
-        # Disable all buttons
         for item in self.children:
-            item.disabled = True
+            if isinstance(item, discord.ui.Button):
+                item.disabled = True
         
         await interaction.response.edit_message(embed=embed, view=self)
 

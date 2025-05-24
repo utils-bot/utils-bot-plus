@@ -1,13 +1,10 @@
-"""
-Configuration settings for Utils Bot v2.0
-"""
+"""Configuration settings for Utils Bot v2.0"""
 
 import os
 from typing import List, Optional
 from pydantic import BaseModel, field_validator
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
 load_dotenv()
 
 
@@ -71,7 +68,6 @@ class Settings(BaseModel):
     auto_sync_commands: bool = os.getenv("AUTO_SYNC_COMMANDS", "false").lower() == "true"
 
     def __init__(self, **data):
-        # Parse DEV_IDS before calling super().__init__()
         dev_ids_str = os.getenv("DEV_IDS", "")
         if dev_ids_str:
             try:
@@ -81,7 +77,6 @@ class Settings(BaseModel):
         else:
             dev_ids = []
         
-        # Pass dev_ids to the parent constructor
         data.setdefault('dev_ids', dev_ids)
         super().__init__(**data)
     
@@ -94,7 +89,6 @@ class Settings(BaseModel):
         return v.upper()
 
 
-# Global settings instance
 settings = Settings()
 
 
@@ -119,5 +113,4 @@ class Assets:
     BOT_VERSION = "2.0.0"
 
 
-# Global assets instance
 assets = Assets()

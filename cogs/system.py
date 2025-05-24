@@ -1,6 +1,4 @@
-"""
-System commands cog for Utils Bot v2.0
-"""
+"""System commands cog for UtilsBot+"""
 
 import io
 import sys
@@ -101,7 +99,6 @@ class SystemCog(commands.Cog, name="System"):
         """Evaluate Python code"""
         await interaction.response.defer(ephemeral=True)
         
-        # Setup execution environment
         env = {
             'bot': self.bot,
             'interaction': interaction,
@@ -113,44 +110,35 @@ class SystemCog(commands.Cog, name="System"):
             'db': self.bot.db
         }
         
-        # Capture stdout
         stdout = io.StringIO()
         old_stdout = sys.stdout
         
         try:
-            # Redirect stdout
             sys.stdout = stdout
             
-            # Execute code
             if code.startswith('```python'):
                 code = code[9:-3]
             elif code.startswith('```'):
                 code = code[3:-3]
             
-            # Try to evaluate as expression first
             try:
                 result = eval(code, env)
                 if result is not None:
                     print(repr(result))
             except SyntaxError:
-                # If not an expression, execute as statement
                 exec(code, env)
             
-            # Get output
             output = stdout.getvalue()
             
         except Exception as e:
             output = f"Error: {traceback.format_exc()}"
         
         finally:
-            # Restore stdout
             sys.stdout = old_stdout
         
-        # Format output
         if not output:
             output = "No output"
         
-        # Truncate if too long
         if len(output) > 1900:
             output = output[:1900] + "\n... (truncated)"
         
@@ -264,7 +252,6 @@ class SystemCog(commands.Cog, name="System"):
         """Unload a specific cog"""
         await interaction.response.defer(ephemeral=True)
         
-        # Prevent unloading system cog
         if cog.lower() == "system":
             embed = create_error_embed(
                 "Cannot Unload",

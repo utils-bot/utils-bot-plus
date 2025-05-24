@@ -1,6 +1,4 @@
-"""
-Custom logging setup for Utils Bot v2.0
-"""
+"""Custom logging setup for Utils Bot v2.0"""
 
 import logging
 import logging.handlers
@@ -13,17 +11,10 @@ from config.settings import settings
 
 
 def setup_logging(log_file: Optional[str] = None) -> None:
-    """
-    Setup structured logging with both file and console handlers
-    
-    Args:
-        log_file: Optional log file path override
-    """
-    # Create logs directory if it doesn't exist
+    """Setup structured logging with both file and console handlers"""
     log_path = Path(log_file or settings.log_file)
     log_path.parent.mkdir(parents=True, exist_ok=True)
     
-    # Configure standard library logging
     logging.basicConfig(
         level=getattr(logging, settings.log_level),
         format="%(message)s",
@@ -38,7 +29,6 @@ def setup_logging(log_file: Optional[str] = None) -> None:
         ]
     )
     
-    # Configure structlog
     structlog.configure(
         processors=[
             structlog.contextvars.merge_contextvars,
@@ -55,13 +45,5 @@ def setup_logging(log_file: Optional[str] = None) -> None:
 
 
 def get_logger(name: str) -> structlog.BoundLogger:
-    """
-    Get a structured logger instance
-    
-    Args:
-        name: Logger name (usually __name__)
-        
-    Returns:
-        Configured logger instance
-    """
+    """Get a structured logger instance"""
     return structlog.get_logger(name)

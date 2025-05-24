@@ -1,6 +1,4 @@
-"""
-Information and bot management cog for Utils Bot v2.0
-"""
+"""Information and bot management cog for UtilsBot+"""
 
 import platform
 import psutil
@@ -13,7 +11,7 @@ from discord.ext import commands
 
 from config.settings import settings, assets
 from core.logger import get_logger
-from utils.checks import dev_only, requires_whitelist
+from utils.checks import dev_only
 from utils.embeds import create_embed, create_success_embed, create_error_embed, format_duration
 
 
@@ -24,19 +22,15 @@ class InfoCog(commands.Cog, name="Info"):
         self.bot = bot
         self.logger = get_logger(__name__)
     
-    # Slash Commands Only
-    
     @app_commands.command(name="info", description="Display bot information and statistics")
     async def info(self, interaction: discord.Interaction):
         """Display comprehensive bot information"""
         await interaction.response.defer()
         
-        # Get system information
         process = psutil.Process()
         memory_usage = process.memory_info().rss / 1024 / 1024  # MB
         cpu_usage = process.cpu_percent()
         
-        # Bot statistics
         total_guilds = len(self.bot.guilds)
         total_users = len(self.bot.users)
         total_commands = len(self.bot.tree.get_commands())
@@ -48,7 +42,6 @@ class InfoCog(commands.Cog, name="Info"):
             thumbnail=self.bot.user.display_avatar.url
         )
         
-        # Bot Statistics
         embed.add_field(
             name="📊 Statistics",
             value=(
@@ -60,7 +53,6 @@ class InfoCog(commands.Cog, name="Info"):
             inline=True
         )
         
-        # Technical Information
         embed.add_field(
             name="⚙️ Technical",
             value=(
@@ -72,7 +64,6 @@ class InfoCog(commands.Cog, name="Info"):
             inline=True
         )
         
-        # Performance
         embed.add_field(
             name="📈 Performance",
             value=(
@@ -84,7 +75,6 @@ class InfoCog(commands.Cog, name="Info"):
             inline=True
         )
         
-        # Features
         features = []
         if settings.enable_ai_commands:
             features.append("🤖 AI Commands")
@@ -102,7 +92,6 @@ class InfoCog(commands.Cog, name="Info"):
                 inline=True
             )
         
-        # Links and Support
         embed.add_field(
             name="🔗 Links",
             value=(
@@ -131,7 +120,7 @@ class InfoCog(commands.Cog, name="Info"):
         
         embed = create_embed(
             "🏓 Pong!",
-            f"Bot latency and response times"
+            "Bot latency and response times"
         )
         
         embed.add_field(
@@ -148,11 +137,11 @@ class InfoCog(commands.Cog, name="Info"):
         
         # Color based on latency
         if websocket_latency < 100:
-            embed.color = 0x00ff00  # Green - Excellent
+            embed.color = 0x00ff00
         elif websocket_latency < 200:
-            embed.color = 0xffaa00  # Yellow - Good
+            embed.color = 0xffaa00
         else:
-            embed.color = 0xff0000  # Red - Poor
+            embed.color = 0xff0000
         
         await interaction.followup.send(embed=embed)
     
@@ -160,7 +149,7 @@ class InfoCog(commands.Cog, name="Info"):
     async def version(self, interaction: discord.Interaction):
         """Display version information"""
         embed = create_embed(
-            f"📋 Version Information",
+            "📋 Version Information",
             f"**Bot Version:** {assets.BOT_VERSION}\n"
             f"**Discord.py Version:** {discord.__version__}\n"
             f"**Python Version:** {platform.python_version()}"
@@ -182,7 +171,7 @@ class InfoCog(commands.Cog, name="Info"):
     
     async def category_autocomplete(
         self,
-        interaction: discord.Interaction,
+        _interaction: discord.Interaction,
         current: str,
     ) -> List[app_commands.Choice[str]]:
         """Autocomplete for help command categories"""

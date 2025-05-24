@@ -1,18 +1,21 @@
-"""
-Tools and utilities cog for Utils Bot v2.0
-"""
+"""Tools and utilities cog for UtilsBot+"""
 
 import base64
+import hashlib
 import io
-import qrcode
+import secrets
+import string
+from typing import Optional
 
 import discord
 from discord import app_commands
 from discord.ext import commands
 import pyotp
+import qrcode
 
-from utils.checks import cooldown
-from utils.embeds import create_error_embed, create_success_embed
+from core.logger import get_logger
+from utils.checks import requires_whitelist, cooldown
+from utils.embeds import create_embed, create_error_embed, create_success_embed
 
 class ToolsCog(commands.Cog, name="Tools"):
     """Various utility tools and functions"""
@@ -36,10 +39,8 @@ class ToolsCog(commands.Cog, name="Tools"):
     ):
         """Generate a TOTP code from a secret key"""
         try:
-            # Clean up the secret (remove spaces and convert to uppercase)
             cleaned_secret = secret.replace(" ", "").upper()
             
-            # Validate base32 format
             try:
                 base64.b32decode(cleaned_secret)
             except Exception:
@@ -50,11 +51,9 @@ class ToolsCog(commands.Cog, name="Tools"):
                 await interaction.response.send_message(embed=embed, ephemeral=True)
                 return
             
-            # Generate TOTP
             totp = pyotp.TOTP(cleaned_secret)
             current_code = totp.now()
             
-            # Calculate time remaining
             import time
             current_time = int(time.time())
             time_remaining = 30 - (current_time % 30)
@@ -71,7 +70,6 @@ class ToolsCog(commands.Cog, name="Tools"):
             
             await interaction.response.send_message(embed=embed, ephemeral=ephemeral)
             
-            # Track API usage
             if self.bot.db:
                 await self.bot.db.track_api_usage(interaction.user.id, "totp")
             
@@ -104,7 +102,6 @@ class ToolsCog(commands.Cog, name="Tools"):
         ephemeral: bool = False
     ):
         """Generate a QR code from text"""
-        # Validate text length
         if len(text) > 2000:
             embed = create_error_embed(
                 "Text Too Long",
@@ -116,7 +113,6 @@ class ToolsCog(commands.Cog, name="Tools"):
         await interaction.response.defer(ephemeral=ephemeral)
         
         try:
-            # Set QR code parameters based on size
             size_config = {
                 "small": {"box_size": 5, "border": 2},
                 "medium": {"box_size": 8, "border": 3},
@@ -125,7 +121,6 @@ class ToolsCog(commands.Cog, name="Tools"):
             
             config = size_config.get(size, size_config["medium"])
             
-            # Generate QR code
             qr = qrcode.QRCode(
                 version=1,
                 error_correction=qrcode.ERROR_CORRECT_L,
@@ -135,15 +130,12 @@ class ToolsCog(commands.Cog, name="Tools"):
             qr.add_data(text)
             qr.make(fit=True)
             
-            # Create image
             img = qr.make_image(fill_color="black", back_color="white")
             
-            # Convert to bytes
             img_bytes = io.BytesIO()
             img.save(img_bytes, "PNG") 
             img_bytes.seek(0)
             
-            # Create Discord file
             file = discord.File(img_bytes, filename="qrcode.png")
             
             embed = create_success_embed(
@@ -154,7 +146,6 @@ class ToolsCog(commands.Cog, name="Tools"):
             
             await interaction.followup.send(embed=embed, file=file)
             
-            # Track API usage
             if self.bot.db:
                 await self.bot.db.track_api_usage(interaction.user.id, "qr_code")
             
@@ -196,13 +187,11 @@ class ToolsCog(commands.Cog, name="Tools"):
         
         try:
             if operation == "encode":
-                # Encode to base64
                 encoded_bytes = base64.b64encode(text.encode('utf-8'))
                 result = encoded_bytes.decode('utf-8')
                 title = "Base64 Encoded"
                 
             else:  # decode
-                # Decode from base64
                 try:
                     decoded_bytes = base64.b64decode(text)
                     result = decoded_bytes.decode('utf-8')
@@ -215,7 +204,6 @@ class ToolsCog(commands.Cog, name="Tools"):
                     await interaction.response.send_message(embed=embed, ephemeral=True)
                     return
             
-            # Truncate if result is too long
             if len(result) > 1900:
                 result = result[:1900] + "\n... (truncated)"
             
@@ -256,8 +244,6 @@ class ToolsCog(commands.Cog, name="Tools"):
         ephemeral: bool = False
     ):
         """Generate hash of the provided text"""
-        import hashlib
-        
         if len(text) > 10000:
             embed = create_error_embed(
                 "Text Too Long",
@@ -267,10 +253,8 @@ class ToolsCog(commands.Cog, name="Tools"):
             return
         
         try:
-            # Get hash function
             hash_func = getattr(hashlib, algorithm)
             
-            # Generate hash
             hash_object = hash_func(text.encode('utf-8'))
             result = hash_object.hexdigest()
             
@@ -305,10 +289,6 @@ class ToolsCog(commands.Cog, name="Tools"):
         exclude_ambiguous: bool = True
     ):
         """Generate a secure random password"""
-        import secrets
-        import string
-        
-        # Validate length
         if not 8 <= length <= 128:
             embed = create_error_embed(
                 "Invalid Length",
@@ -318,18 +298,15 @@ class ToolsCog(commands.Cog, name="Tools"):
             return
         
         try:
-            # Build character set
             chars = string.ascii_letters + string.digits
             
             if include_symbols:
                 chars += "!@#$%^&*()_+-=[]{}|;:,.<>?"
             
             if exclude_ambiguous:
-                # Remove ambiguous characters
                 ambiguous = "0O1lI"
                 chars = ''.join(c for c in chars if c not in ambiguous)
             
-            # Generate password
             password = ''.join(secrets.choice(chars) for _ in range(length))
             
             embed = create_success_embed(

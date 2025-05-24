@@ -1,6 +1,4 @@
-"""
-Core bot class for Utils Bot v2.0 - Slash Commands Only
-"""
+"""Core bot class for UtilsBot+ - Slash Commands Only"""
 
 from pathlib import Path
 from typing import List, Optional
@@ -15,49 +13,38 @@ from models.database import Database
 
 
 class UtilsBotPlus(commands.Bot):
-    """
-    Main bot class with slash commands only
-    """
+    """Main bot class with slash commands only"""
     
     def __init__(self):
-        # Configure intents
         intents = discord.Intents.default()
         intents.message_content = True
         intents.guilds = True
         intents.guild_messages = True
         
-        # Initialize bot with disabled prefix commands
         super().__init__(
             command_prefix="$disabled$",  # Unused prefix - slash commands only
             intents=intents,
             help_command=None,
         )
         
-        # Setup logging
         self.logger = get_logger(__name__)
         
-        # Initialize database
         self.db: Optional[Database] = None
         
-        # Bot metadata
         self.version = assets.BOT_VERSION
         self.start_time: Optional[float] = None
         
-        # Cog management
         self.loaded_cogs: List[str] = []
     
     async def setup_hook(self) -> None:
         """Setup hook called when bot is starting up"""
         self.logger.info("Starting bot setup...")
         
-        # Initialize database
         self.db = Database(settings.database_url)
         await self.db.initialize()
         
-        # Load cogs
         await self.load_cogs()
         
-        # Sync commands if enabled
         if settings.auto_sync_commands:
             await self.sync_commands()
         
@@ -86,11 +73,9 @@ class UtilsBotPlus(commands.Bot):
     async def sync_commands(self) -> None:
         """Sync application commands"""
         try:
-            # Sync global commands
             synced = await self.tree.sync()
             self.logger.info(f"Synced {len(synced)} global commands")
             
-            # Sync dev guild commands if specified
             if settings.dev_guild_id:
                 dev_guild = discord.Object(id=settings.dev_guild_id)
                 synced_dev = await self.tree.sync(guild=dev_guild)
@@ -113,7 +98,6 @@ class UtilsBotPlus(commands.Bot):
         """Called when bot joins a guild"""
         self.logger.info(f"Joined guild: {guild.name} (ID: {guild.id})")
         
-        # Update presence
         activity = discord.Activity(
             type=discord.ActivityType.watching,
             name=f"{len(self.guilds)} servers | v{self.version}"
@@ -124,7 +108,6 @@ class UtilsBotPlus(commands.Bot):
         """Called when bot leaves a guild"""
         self.logger.info(f"Left guild: {guild.name} (ID: {guild.id})")
         
-        # Update presence
         activity = discord.Activity(
             type=discord.ActivityType.watching,
             name=f"{len(self.guilds)} servers | v{self.version}"
@@ -148,7 +131,6 @@ class UtilsBotPlus(commands.Bot):
             }
         )
         
-        # Handle specific error types
         if isinstance(error, discord.app_commands.CommandOnCooldown):
             embed = create_error_embed(
                 "Command on Cooldown",
