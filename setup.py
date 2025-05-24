@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Interactive setup script for Utils Bot v2.0
+Interactive setup script for UtilsBot+
 """
 
 import secrets
@@ -126,7 +126,7 @@ def setup_env_file():
 
 def main():
     """Main setup function"""
-    print("🤖 Utils Bot v2.0 Interactive Setup")
+    print("🤖 UtilsBot+ Interactive Setup")
     print("=" * 40)
     
     # Create directories

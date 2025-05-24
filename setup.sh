@@ -1,7 +1,7 @@
 #!/bin/bash
-# Setup script for Utils Bot v2.0
+# Setup script for UtilsBot+
 
-echo "🤖 Utils Bot v2.0 Setup Script"
+echo "🤖 UtilsBot+ Setup Script"
 echo "================================"
 echo ""
 

@@ -14,7 +14,7 @@ from core.logger import get_logger
 from models.database import Database
 
 
-class UtilsBot(commands.Bot):
+class UtilsBotPlus(commands.Bot):
     """
     Main bot class with slash commands only
     """

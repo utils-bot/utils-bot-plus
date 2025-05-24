@@ -1,5 +1,5 @@
 """
-Main entry point for Utils Bot v2.0
+Main entry point for UtilsBot+
 """
 
 import asyncio
@@ -9,7 +9,7 @@ from pathlib import Path
 # Add project root to Python path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from core.bot import UtilsBot
+from core.bot import UtilsBotPlus
 from core.logger import setup_logging
 from config.settings import settings
 
@@ -20,7 +20,7 @@ async def main():
     setup_logging()
     
     # Create and run bot
-    bot = UtilsBot()
+    bot = UtilsBotPlus()
     
     try:
         await bot.start(settings.bot_token)

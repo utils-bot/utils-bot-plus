@@ -1,7 +1,7 @@
 #!/bin/bash
-# Quick setup test for Utils Bot v2.0
+# Quick setup test for UtilsBot+
 
-echo "🤖 Utils Bot v2.0 - Setup Verification"
+echo "🤖 UtilsBot+ - Setup Verification"
 echo "======================================"
 
 echo ""

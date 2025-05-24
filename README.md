@@ -1,29 +1,29 @@
-# Utils Bot v2.0
+# UtilsBot+
 
 A modern, feature-rich Discord bot built with Python 3.11+ and discord.py 2.4+. Provides comprehensive utilities including AI integration, interactive games, network tools, security features, and developer commands—all through intuitive slash commands.
 
-## 🌟 Overview
+## Overview
 
-Utils Bot v2.0 is designed with a **slash commands-only** approach for the best user experience. Built on modern async architecture with comprehensive error handling, database integration, and modular design for easy maintenance and feature expansion.
+UtilsBot+ is designed with a **slash commands-only** approach for the best user experience. Built on modern async architecture with comprehensive error handling, database integration, and modular design for easy maintenance and feature expansion.
 
 ### Key Highlights
-- **🚀 Modern Architecture**: Async-first with type safety and comprehensive error handling
-- **🎯 Slash Commands Only**: No prefix commands for cleaner Discord UX
-- **🤖 AI-Powered**: Google Gemini integration with interactive chat capabilities
-- **🛡️ Security-First**: Permission layers, input validation, and user whitelisting
-- **📊 Production-Ready**: Structured logging, health monitoring, and database support
-- **🔧 Developer-Friendly**: Hot reload, code evaluation, and dynamic cog management
+- **Modern Architecture**: Async-first with type safety and comprehensive error handling
+- **Slash Commands Only**: No prefix commands for cleaner Discord UX
+- **AI-Powered**: Google Gemini integration with interactive chat capabilities
+- **Security-First**: Permission layers, input validation, and user whitelisting
+- **Production-Ready**: Structured logging, health monitoring, and database support
+- **Developer-Friendly**: Hot reload, code evaluation, and dynamic cog management
 
-## ✨ Complete Feature Overview
+## Complete Feature Overview
 
-### 🤖 AI Integration (`/ask`, `/chat`)
+### AI Integration (`/ask`, `/chat`)
 **Powered by Google Gemini 1.5 Flash (Free Tier)**
 - **`/ask <question>`** - Quick AI responses with context awareness
 - **`/chat`** - Interactive conversation modal with continue/end controls
 - **Smart Features**: Response truncation, usage tracking, rate limiting (3 questions/minute)
 - **Free Tier**: 15 requests per minute, up to 1M input tokens
 
-### 🎮 Interactive Games (`/wordle`)
+### Interactive Games (`/wordle`)
 **Full Wordle Implementation**
 - **`/wordle`** - Start a new Wordle game with proper game mechanics
 - **Game Features**: 
@@ -33,7 +33,7 @@ Utils Bot v2.0 is designed with a **slash commands-only** approach for the best 
   - Active game management (one game per user)
 - **Word Database**: 2000+ valid 5-letter words with fallback lists
 
-### 🌐 Network & Web Tools
+### Network & Web Tools
 **Screenshot Capture (`/screenshot`)**
 - **`/screenshot <url>`** - High-quality website screenshots
 - **Options**: Full page capture, custom viewport sizes, ad blocking
@@ -51,7 +51,7 @@ Utils Bot v2.0 is designed with a **slash commands-only** approach for the best 
 - **Security Features**: Suspicious domain detection, redirect limits, safety warnings
 - **Supported**: All major URL shorteners (bit.ly, tinyurl, etc.)
 
-### 🔐 Security & Utility Tools
+### Security & Utility Tools
 **Two-Factor Authentication (`/totp`)**
 - **`/totp <secret>`** - Generate TOTP codes for 2FA apps
 - **Features**: Time remaining display, base32 validation, secure handling
@@ -67,7 +67,7 @@ Utils Bot v2.0 is designed with a **slash commands-only** approach for the best 
 - **`/hash <text> <algorithm>`** - Generate MD5, SHA1, SHA256, SHA512 hashes
 - **`/password`** - Generate cryptographically secure passwords
 
-### ℹ️ Information & Help System
+### Information & Help System
 **Bot Information (`/info`, `/ping`, `/version`)**
 - **`/info`** - Comprehensive bot statistics and system information
   - Server count, user count, uptime, memory usage, CPU usage
@@ -80,7 +80,7 @@ Utils Bot v2.0 is designed with a **slash commands-only** approach for the best 
 - **Features**: Autocomplete categories, command descriptions, usage examples
 - **Categories**: Information, AI, Games, Tools, Network, System
 
-### 🔒 User Management & Security
+### User Management & Security
 **Beta Whitelist System (`/whitelist`)**
 - **`/whitelist add <user>`** - Add users to beta access (dev-only)
 - **`/whitelist remove <user>`** - Remove beta access (dev-only)
@@ -88,7 +88,7 @@ Utils Bot v2.0 is designed with a **slash commands-only** approach for the best 
 - **`/whitelist check <user>`** - Check whitelist status (dev-only)
 - **Features**: Database-backed, automatic permission checks, closed beta support
 
-### 🛠️ Developer & System Commands
+### Developer & System Commands
 **Command Management (`/sync`, `/reload`, `/load`, `/unload`)**
 - **`/sync`** - Synchronize slash commands (global/guild/specific)
 - **`/reload <cog>`** - Hot reload cogs without restart
@@ -104,7 +104,7 @@ Utils Bot v2.0 is designed with a **slash commands-only** approach for the best 
 - **`/guilds`** - List all servers with member counts (dev-only)
 - **Features**: Paginated display, server statistics
 
-## 🚀 Quick Start Guide
+## Quick Start Guide
 
 ### Prerequisites
 - **Python 3.11+** (Python 3.12 recommended)
@@ -116,7 +116,7 @@ Utils Bot v2.0 is designed with a **slash commands-only** approach for the best 
 ```bash
 # Clone the repository
 git clone <your-repository-url>
-cd utils-bot-v2
+cd utils-bot-plus
 
 # Run automated setup (creates .env, directories, generates secrets)
 chmod +x setup.sh
@@ -173,19 +173,40 @@ python main.py
 3. **Sync Commands**: Use `/sync` to ensure all commands are available
 4. **Set Permissions**: Ensure bot has necessary permissions in your server
 
-## 📋 Command Reference
+## Troubleshooting
+
+### Bot Won't Start
+1. Check your `.env` file has all required values
+2. Verify your bot token is correct
+3. Ensure Python 3.11+ is installed
+4. Check logs in `logs/bot.log` for detailed error information
+
+### Commands Not Working
+1. Run `/sync` command to sync slash commands
+2. Check bot has proper permissions in your server
+3. Verify you're whitelisted (if beta mode is enabled)
+
+### Permission Errors
+- Ensure bot has `Send Messages`, `Use Slash Commands` permissions
+- For screenshots: needs `Attach Files` permission
+- For embeds: needs `Embed Links` permission
+
+### Debug Mode
+Enable debug mode by setting `DEBUG=true` in your `.env` file for more verbose logging.
+
+## Command Reference
 
 ### Available Commands by Category
 
 | Category | Commands | Description |
 |----------|----------|-------------|
-| **🤖 AI** | `/ask`, `/chat` | Google Gemini AI integration |
-| **🎮 Games** | `/wordle` | Interactive word games |
-| **🌐 Network** | `/screenshot`, `/ip`, `/unshorten` | Web and network utilities |
-| **🔐 Security** | `/totp`, `/qr`, `/base64`, `/hash`, `/password` | Security and encoding tools |
-| **ℹ️ Info** | `/info`, `/ping`, `/version`, `/help` | Bot information and help |
-| **🔒 Admin** | `/whitelist add/remove/list/check` | User management (dev-only) |
-| **🛠️ System** | `/sync`, `/eval`, `/reload`, `/load`, `/unload` | Developer tools (dev-only) |
+| **AI** | `/ask`, `/chat` | Google Gemini AI integration |
+| **Games** | `/wordle` | Interactive word games |
+| **Network** | `/screenshot`, `/ip`, `/unshorten` | Web and network utilities |
+| **Security** | `/totp`, `/qr`, `/base64`, `/hash`, `/password` | Security and encoding tools |
+| **Info** | `/info`, `/ping`, `/version`, `/help` | Bot information and help |
+| **Admin** | `/whitelist add/remove/list/check` | User management (dev-only) |
+| **System** | `/sync`, `/eval`, `/reload`, `/load`, `/unload` | Developer tools (dev-only) |
 
 ### Command Details & Usage
 
@@ -219,7 +240,7 @@ python main.py
 /eval code:"print('Hello World')"
 ```
 
-## 🏗️ Technical Architecture
+## Technical Architecture
 
 ### Core Technologies
 - **Discord.py 2.4+**: Modern Discord API wrapper with slash command support
@@ -231,7 +252,7 @@ python main.py
 
 ### Project Structure
 ```
-utils-bot-v2/
+utils-bot-plus/
 ├── main.py                 # Application entry point
 ├── pyproject.toml         # Modern Python packaging
 ├── requirements.txt       # Production dependencies
@@ -242,7 +263,7 @@ utils-bot-v2/
 │   └── __init__.py
 │
 ├── core/                 # Core bot functionality
-│   ├── bot.py           # Main UtilsBot class
+│   ├── bot.py           # Main UtilsBot+ class
 │   ├── logger.py        # Structured logging setup
 │   └── __init__.py
 │
@@ -288,6 +309,27 @@ This project follows modern Python best practices:
 - **Async/Await**: Proper asynchronous programming
 - **Error Handling**: Comprehensive error management
 - **Logging**: Structured logging with different levels
+
+### Development Commands
+
+```bash
+# Development setup with auto-formatting
+make dev
+
+# Run with hot reload
+make run-dev
+
+# Format code
+make format
+
+# Run tests
+make check
+```
+
+### Additional Resources
+- Check the detailed [Technical Wiki](TECHNICAL_WIKI.md) for in-depth documentation
+- Review logs in `logs/bot.log` for troubleshooting
+- Enable debug mode: set `DEBUG=true` in `.env`
 
 ## Contributing
 

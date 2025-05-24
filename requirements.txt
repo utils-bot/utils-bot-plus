@@ -1,4 +1,4 @@
-# Modern dependencies for Utils Bot v2.0
+# Modern dependencies for UtilsBot+
 
 # Core Discord Library
 discord.py>=2.4.0

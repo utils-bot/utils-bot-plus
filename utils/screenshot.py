@@ -123,7 +123,7 @@ class ScreenshotService:
         
         headers = {
             'Authorization': f'Bearer {self.api_key}',
-            'User-Agent': 'Utils-Bot-v2/2.0'
+            'User-Agent': 'UtilsBot+/1.0'
         }
         
         timeout = aiohttp.ClientTimeout(total=30)

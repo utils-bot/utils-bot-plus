@@ -1,4 +1,4 @@
-# Utils Bot v2.0 - Technical Wiki
+# UtilsBot+ - Technical Wiki
 
 Comprehensive technical documentation for developers and advanced users.
 
@@ -17,7 +17,7 @@ Comprehensive technical documentation for developers and advanced users.
 
 ## 🏗️ Architecture Overview
 
-Utils Bot v2.0 follows a modern, modular architecture:
+UtilsBot+ follows a modern, modular architecture:
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
@@ -61,7 +61,7 @@ Utils Bot v2.0 follows a modern, modular architecture:
 The main bot class extends `commands.Bot` with custom functionality:
 
 ```python
-class UtilsBot(commands.Bot):
+class UtilsBot+(commands.Bot):
     def __init__(self):
         # Slash commands only setup
         super().__init__(
@@ -438,7 +438,7 @@ url = f"http://ip-api.com/json/{ip}"
 ### Project Structure
 
 ```
-utils-bot-v2/
+utils-bot-plus/
 ├── main.py                 # Entry point
 ├── config/
 │   ├── __init__.py
@@ -551,7 +551,7 @@ async def example_function(
 ```bash
 # Setup development environment
 git clone <repository>
-cd utils-bot-v2
+cd utils-bot-plus
 make dev
 
 # Configure environment
@@ -567,7 +567,7 @@ make run-dev
 **Docker (Recommended):**
 ```bash
 # Build image
-docker build -t utils-bot-v2 .
+docker build -t utils-bot-plus .
 
 # Run with compose
 docker-compose up -d
@@ -765,4 +765,4 @@ logger.info(f"Command completed in {response_time:.2f}ms")
 
 ---
 
-This technical wiki provides complete documentation for understanding, developing, and maintaining Utils Bot v2.0. For basic usage, see the [Simple README](README_SIMPLE.md).
+This technical wiki provides complete documentation for understanding, developing, and maintaining UtilsBot+. For basic usage, see the [Simple README](README_SIMPLE.md).

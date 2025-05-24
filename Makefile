@@ -47,7 +47,7 @@ migrate: ## Run database migrations
 	python migrations/populate_data.py
 
 docker-build: ## Build Docker image
-	docker build -t utils-bot-v2 .
+	docker build -t utils-bot-plus .
 
 docker-run: ## Run with Docker Compose
 	docker-compose up -d
