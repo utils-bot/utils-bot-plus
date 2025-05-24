@@ -1,8 +1,8 @@
-#!/usr/bin/env python3
 """
 Interactive setup script for UtilsBot+
 """
 
+import os
 import secrets
 import shutil
 import sys
@@ -10,19 +10,33 @@ import asyncio
 import subprocess
 from pathlib import Path
 
+# Get the directory where this script is located
+SCRIPT_DIR = Path(__file__).parent.absolute()
+
+def ensure_working_directory():
+    """Ensure we're working in the correct directory"""
+    os.chdir(SCRIPT_DIR)
+    print(f"📁 Working directory: {SCRIPT_DIR}")
+
 
 def install_dependencies():
     """Install required Python packages"""
     print("\n📦 Installing dependencies...")
+    requirements_file = SCRIPT_DIR / "requirements.txt"
+    
+    if not requirements_file.exists():
+        print(f"❌ requirements.txt not found at {requirements_file}")
+        return False
+    
     try:
         subprocess.run([
-            sys.executable, "-m", "pip", "install", "-r", "requirements.txt"
+            sys.executable, "-m", "pip", "install", "-r", str(requirements_file)
         ], check=True, capture_output=True, text=True)
         print("✅ Dependencies installed successfully")
         return True
     except subprocess.CalledProcessError as e:
         print(f"❌ Failed to install dependencies: {e}")
-        print("Please run manually: pip install -r requirements.txt")
+        print(f"Please run manually: pip install -r {requirements_file}")
         return False
 
 
@@ -31,7 +45,7 @@ async def run_migrations():
     print("\n🗃️ Setting up database...")
     
     # Add project root to path for imports
-    sys.path.insert(0, str(Path(__file__).parent))
+    sys.path.insert(0, str(SCRIPT_DIR))
     
     try:
         # Import and run database initialization
@@ -49,7 +63,7 @@ async def run_migrations():
     except Exception as e:
         print(f"❌ Database initialization failed: {e}")
         print("You may need to run migrations manually:")
-        print("  python migrations/init_db.py")
+        print(f"  cd {SCRIPT_DIR} && python migrations/init_db.py")
         return False
 
 
@@ -57,8 +71,9 @@ def create_directories():
     """Create necessary directories"""
     directories = ["data", "logs"]
     for directory in directories:
-        Path(directory).mkdir(exist_ok=True)
-        print(f"✅ Created directory: {directory}")
+        dir_path = SCRIPT_DIR / directory
+        dir_path.mkdir(exist_ok=True)
+        print(f"✅ Created directory: {dir_path}")
 
 
 def generate_secret_key():
@@ -68,17 +83,22 @@ def generate_secret_key():
 
 def setup_env_file():
     """Setup environment file with user input"""
-    env_example = Path(".env.example")
-    env_file = Path(".env")
+    env_example = SCRIPT_DIR / ".env.example"
+    env_file = SCRIPT_DIR / ".env"
+    
+    if not env_example.exists():
+        print(f"❌ .env.example not found at {env_example}")
+        return False
     
     if env_file.exists():
-        backup_name = f".env.backup.{int(Path('.env').stat().st_mtime)}"
-        shutil.copy(env_file, backup_name)
-        print(f"⚠️  Backed up existing .env file to {backup_name}")
+        backup_name = f".env.backup.{int(env_file.stat().st_mtime)}"
+        backup_path = SCRIPT_DIR / backup_name
+        shutil.copy(env_file, backup_path)
+        print(f"⚠️  Backed up existing .env file to {backup_path}")
     
     # Copy template
     shutil.copy(env_example, env_file)
-    print("📋 Created .env file from template")
+    print(f"📋 Created .env file from template at {env_file}")
     
     # Read current content
     with open(env_file, 'r', encoding='utf-8') as f:
@@ -129,6 +149,9 @@ def main():
     print("🤖 UtilsBot+ Interactive Setup")
     print("=" * 40)
     
+    # Ensure we're in the correct directory
+    ensure_working_directory()
+    
     # Create directories
     print("\n📂 Creating required directories...")
     create_directories()
@@ -157,30 +180,30 @@ def main():
     if configured and deps_installed and db_initialized:
         print("🎉 Setup complete! Your bot is ready to run.")
         print("\nNext steps:")
-        print("1. Run the bot: python main.py")
+        print(f"1. Run the bot: cd {SCRIPT_DIR} && python main.py")
         print("2. Invite the bot to your server with appropriate permissions")
     elif configured and deps_installed:
         print("⚠️  Setup mostly complete, but database initialization failed.")
-        print("Please run manually: python migrations/init_db.py")
-        print("Then run: python main.py")
+        print(f"Please run manually: cd {SCRIPT_DIR} && python migrations/init_db.py")
+        print(f"Then run: cd {SCRIPT_DIR} && python main.py")
     elif configured:
         print("⚠️  Configuration complete, but dependencies failed to install.")
         print("Please run manually:")
-        print("1. pip install -r requirements.txt")
-        print("2. python migrations/init_db.py")
-        print("3. python main.py")
+        print(f"1. cd {SCRIPT_DIR} && pip install -r requirements.txt")
+        print(f"2. cd {SCRIPT_DIR} && python migrations/init_db.py")
+        print(f"3. cd {SCRIPT_DIR} && python main.py")
     else:
         print("⚠️  Partial setup completed.")
-        print("Please edit .env file and fill in the required values:")
+        print(f"Please edit {SCRIPT_DIR}/.env file and fill in the required values:")
         print("- BOT_TOKEN")
         print("- DEV_IDS") 
         print("- GEMINI_API_KEY")
         print("\nThen run:")
-        print("1. pip install -r requirements.txt")
-        print("2. python migrations/init_db.py") 
-        print("3. python main.py")
+        print(f"1. cd {SCRIPT_DIR} && pip install -r requirements.txt")
+        print(f"2. cd {SCRIPT_DIR} && python migrations/init_db.py") 
+        print(f"3. cd {SCRIPT_DIR} && python main.py")
     
-    print("\n📖 For more information, see README.md")
+    print(f"\n📖 For more information, see {SCRIPT_DIR}/README.md")
 
 
 if __name__ == "__main__":

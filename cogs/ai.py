@@ -34,7 +34,7 @@ class AICog(commands.Cog, name="AI"):
     @app_commands.command(name="ask", description="Ask Gemini AI a question")
     @app_commands.describe(
         question="Your question for Gemini",
-        ephemeral="Whether to show the response only to you"
+        ephemeral="Whether to show the response only to you (default: public)"
     )
     @requires_whitelist()
     @cooldown(rate=3, per=60)  # 3 questions per minute
@@ -93,10 +93,20 @@ class AICog(commands.Cog, name="AI"):
             )
             await interaction.edit_original_response(embed=embed)
     
-    @app_commands.command(name="chat", description="Start a conversation with Gemini AI")
+    @app_commands.command(name="chat", description="Chat with Gemini AI")
+    @app_commands.describe(
+        message="Your message to Gemini",
+        ephemeral="Whether to show the response only to you (default: public)"
+    )
     @requires_whitelist()
-    async def chat_with_gemini(self, interaction: discord.Interaction):
-        """Start an interactive chat with Gemini"""
+    @cooldown(rate=3, per=60)  # 3 messages per minute
+    async def chat_with_gemini(
+        self, 
+        interaction: discord.Interaction, 
+        message: str,
+        ephemeral: bool = False
+    ):
+        """Chat with Gemini AI"""
         if not self.model:
             embed = create_error_embed(
                 "Service Unavailable",
@@ -105,8 +115,50 @@ class AICog(commands.Cog, name="AI"):
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
         
-        modal = ChatModal(self.model, self.bot, interaction.user)
-        await interaction.response.send_modal(modal)
+        # Show loading message
+        loading_embed = create_loading_embed(
+            "Generating Response...",
+            "Gemini is thinking..."
+        )
+        await interaction.response.send_message(embed=loading_embed, ephemeral=ephemeral)
+        
+        try:
+            if self.bot.db:
+                await self.bot.db.track_api_usage(interaction.user.id, "gemini")
+            
+            response = await asyncio.to_thread(
+                self.model.generate_content,
+                message
+            )
+            
+            answer = response.text
+            
+            if len(answer) > 4000:
+                answer = answer[:4000] + "\n\n... (truncated)"
+            
+            embed = create_embed(
+                "🤖 Gemini Chat Response",
+                answer,
+                thumbnail=assets.GEMINI_ICON_URL
+            )
+            embed.add_field(
+                name="💭 Your Message",
+                value=message if len(message) <= 1024 else message[:1021] + "...",
+                inline=False
+            )
+            embed.set_footer(text=f"Chat by {interaction.user.display_name}")
+            
+            view = ContinueChatView(self.model, self.bot, interaction.user)
+            
+            await interaction.edit_original_response(embed=embed, view=view)
+            
+        except Exception as e:
+            self.logger.error(f"Gemini chat error: {e}")
+            embed = create_error_embed(
+                "Chat Error",
+                "Sorry, I encountered an error while processing your message. Please try again later."
+            )
+            await interaction.edit_original_response(embed=embed)
 
 
 class ChatModal(discord.ui.Modal, title="Chat with Gemini AI"):
@@ -132,7 +184,7 @@ class ChatModal(discord.ui.Modal, title="Chat with Gemini AI"):
             "Generating Response...",
             "Gemini is thinking..."
         )
-        await interaction.response.send_message(embed=loading_embed, ephemeral=True)
+        await interaction.response.send_message(embed=loading_embed, ephemeral=False)
         
         try:
             if self.bot.db:
@@ -149,15 +201,16 @@ class ChatModal(discord.ui.Modal, title="Chat with Gemini AI"):
                 answer = answer[:4000] + "\n\n... (truncated)"
             
             embed = create_embed(
-                "Gemini Chat Response",
+                "🤖 Gemini Chat Response",
                 answer,
                 thumbnail=assets.GEMINI_ICON_URL
             )
             embed.add_field(
-                name="Your Message",
+                name="💭 Your Message",
                 value=self.message.value if len(self.message.value) <= 1024 else self.message.value[:1021] + "...",
                 inline=False
             )
+            embed.set_footer(text=f"Chat started by {self.user.display_name}")
             
             view = ContinueChatView(self.model, self.bot, self.user)
             
@@ -205,7 +258,7 @@ class ContinueChatView(discord.ui.View):
         
         embed = create_embed(
             "Chat Ended",
-            "Thanks for chatting with Gemini! Use `/ask` for quick questions or `/chat` to start a new conversation.",
+            "Thanks for chatting with Gemini! Use `/ask` or `/chat` for more conversations.",
             color=assets.SUCCESS_COLOR
         )
         
