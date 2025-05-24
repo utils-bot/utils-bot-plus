@@ -5,7 +5,7 @@ from typing import List, Optional
 import time
 
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 from config.settings import settings, assets
 from core.logger import get_logger
@@ -35,7 +35,21 @@ class UtilsBotPlus(commands.Bot):
         self.start_time: Optional[float] = None
         
         self.loaded_cogs: List[str] = []
-    
+        
+        # Status update task
+        self.status_update_task = self.update_status_periodically.start()
+
+    @tasks.loop(minutes=30)  # Update status every 30 minutes
+    async def update_status_periodically(self) -> None:
+        """Periodically update bot status for variety"""
+        if self.is_ready():
+            await self.update_bot_status()
+
+    @update_status_periodically.before_loop
+    async def before_status_update(self) -> None:
+        """Wait until bot is ready before starting status updates"""
+        await self.wait_until_ready()
+
     async def setup_hook(self) -> None:
         """Setup hook called when bot is starting up"""
         self.logger.info("Starting bot setup...")
@@ -88,31 +102,29 @@ class UtilsBotPlus(commands.Bot):
         """Called when the bot is ready"""
         self.start_time = time.time()
         
-        self.logger.info(
-            f"Bot ready! Logged in as {self.user} (ID: {self.user.id}) | "
-            f"Guilds: {len(self.guilds)} | Users: {len(self.users)} | "
-            f"Slash Commands: {len(self.tree.get_commands())}"
-        )
+        # Update bot status
+        await self.update_bot_status()
+        
+        if self.user:
+            self.logger.info(
+                f"Bot ready! Logged in as {self.user} (ID: {self.user.id}) | "
+                f"Guilds: {len(self.guilds)} | Users: {len(self.users)} | "
+                f"Slash Commands: {len(self.tree.get_commands())}"
+            )
     
     async def on_guild_join(self, guild: discord.Guild) -> None:
         """Called when bot joins a guild"""
         self.logger.info(f"Joined guild: {guild.name} (ID: {guild.id})")
         
-        activity = discord.Activity(
-            type=discord.ActivityType.watching,
-            name=f"{len(self.guilds)} servers | v{self.version}"
-        )
-        await self.change_presence(activity=activity)
+        # Update status with new server count
+        await self.update_bot_status()
     
     async def on_guild_remove(self, guild: discord.Guild) -> None:
         """Called when bot leaves a guild"""
         self.logger.info(f"Left guild: {guild.name} (ID: {guild.id})")
         
-        activity = discord.Activity(
-            type=discord.ActivityType.watching,
-            name=f"{len(self.guilds)} servers | v{self.version}"
-        )
-        await self.change_presence(activity=activity)
+        # Update status with new server count
+        await self.update_bot_status()
     
     async def on_application_command_error(
         self, 
@@ -176,3 +188,94 @@ class UtilsBotPlus(commands.Bot):
         if self.start_time:
             return time.time() - self.start_time
         return None
+    
+    async def update_bot_status(self) -> None:
+        """Update bot's Discord status with current information"""
+        try:
+            total_guilds = len(self.guilds)
+            total_users = len(self.users)
+            total_commands = len(self.tree.get_commands())
+            
+            # Import here to avoid circular imports
+            import random
+            from datetime import datetime
+            
+            # Calculate uptime for display
+            uptime_hours = 0
+            if self.start_time:
+                uptime_seconds = time.time() - self.start_time
+                uptime_hours = int(uptime_seconds // 3600)
+            
+            # Create diverse status messages based on time and stats
+            current_hour = datetime.now().hour
+            
+            # Define different status categories
+            status_options = {
+                "stats": [
+                    f"{total_guilds} servers | v{self.version}",
+                    f"{total_users:,} users | /help for commands",
+                    f"{total_commands} slash commands available",
+                    f"Serving {total_guilds} communities"
+                ],
+                "helpful": [
+                    "Type /help for commands",
+                    f"Ready to help in {total_guilds} servers",
+                    "Use /info for bot information",
+                    "AI-powered utilities at your service"
+                ],
+                "activity": [
+                    f"Online for {uptime_hours}h | v{self.version}",
+                    f"Processing commands in {total_guilds} servers",
+                    f"Helping {total_users:,} Discord users",
+                    "Providing utilities & AI assistance"
+                ]
+            }
+            
+            # Choose status category based on time (for variety)
+            if current_hour < 8:  # Early morning - show stats
+                category = "stats"
+                activity_type = discord.ActivityType.watching
+            elif current_hour < 16:  # Day time - show helpful info
+                category = "helpful"
+                activity_type = discord.ActivityType.listening
+            else:  # Evening - show activity
+                category = "activity"
+                activity_type = discord.ActivityType.playing
+            
+            # Add some randomness while keeping time-based preference
+            if random.random() < 0.3:  # 30% chance to use different category
+                category = random.choice(list(status_options.keys()))
+                activity_type = random.choice([
+                    discord.ActivityType.watching,
+                    discord.ActivityType.listening,
+                    discord.ActivityType.playing
+                ])
+            
+            # Select message from chosen category
+            message = random.choice(status_options[category])
+            
+            # Special status for milestones
+            if total_guilds % 50 == 0 and total_guilds > 0:
+                message = f"🎉 {total_guilds} servers milestone! | v{self.version}"
+                activity_type = discord.ActivityType.playing
+            elif total_users >= 10000 and total_users % 1000 < 50:
+                message = f"🎊 {total_users:,} users milestone! | /help"
+                activity_type = discord.ActivityType.watching
+            
+            # Create and set the activity
+            activity = discord.Activity(type=activity_type, name=message)
+            await self.change_presence(activity=activity, status=discord.Status.online)
+            
+            self.logger.debug(f"Updated bot status: {activity_type.name} '{message}'")
+            
+        except Exception as e:
+            self.logger.error(f"Failed to update bot status: {e}")
+            # Fallback to simple status
+            try:
+                fallback_activity = discord.Activity(
+                    type=discord.ActivityType.playing,
+                    name=f"UtilsBot+ v{self.version}"
+                )
+                await self.change_presence(activity=fallback_activity, status=discord.Status.online)
+            except Exception as fallback_error:
+                self.logger.error(f"Fallback status update also failed: {fallback_error}")

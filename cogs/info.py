@@ -177,7 +177,7 @@ class InfoCog(commands.Cog, name="Info"):
         """Autocomplete for help command categories"""
         categories = ["Information", "AI", "Games", "Tools", "Network", "System"]
         return [
-            app_commands.Choice(name=category, value=category.lower())
+            app_commands.Choice(name=category, value=category)
             for category in categories
             if current.lower() in category.lower()
         ]
@@ -199,15 +199,15 @@ class InfoCog(commands.Cog, name="Info"):
         # Get all commands from the bot's command tree
         all_commands = self.bot.tree.get_commands()
         
-        # Organize commands by cog/category
+        # Define command categories with emojis
         command_categories = {
-            "Information": [],
-            "AI": [],
-            "Games": [],
-            "Tools": [],
-            "Network": [],
-            "System": [],
-            "Other": []
+            "Information": {"emoji": "ℹ️", "commands": []},
+            "AI": {"emoji": "🤖", "commands": []},
+            "Games": {"emoji": "🎮", "commands": []},
+            "Tools": {"emoji": "🔧", "commands": []},
+            "Network": {"emoji": "🌐", "commands": []},
+            "System": {"emoji": "⚙️", "commands": []},
+            "Other": {"emoji": "📦", "commands": []}
         }
         
         # Categorize commands
@@ -217,21 +217,21 @@ class InfoCog(commands.Cog, name="Info"):
                 
                 # Map cog names to user-friendly categories
                 if cog_name == "Info":
-                    command_categories["Information"].append(cmd)
+                    command_categories["Information"]["commands"].append(cmd)
                 elif cog_name == "AI":
-                    command_categories["AI"].append(cmd)
+                    command_categories["AI"]["commands"].append(cmd)
                 elif cog_name == "Games":
-                    command_categories["Games"].append(cmd)
+                    command_categories["Games"]["commands"].append(cmd)
                 elif cog_name == "Tools":
-                    command_categories["Tools"].append(cmd)
+                    command_categories["Tools"]["commands"].append(cmd)
                 elif cog_name == "Network":
-                    command_categories["Network"].append(cmd)
+                    command_categories["Network"]["commands"].append(cmd)
                 elif cog_name == "System":
-                    command_categories["System"].append(cmd)
+                    command_categories["System"]["commands"].append(cmd)
                 else:
-                    command_categories["Other"].append(cmd)
+                    command_categories["Other"]["commands"].append(cmd)
             else:
-                command_categories["Other"].append(cmd)
+                command_categories["Other"]["commands"].append(cmd)
         
         # Filter by category if specified
         if category:
@@ -250,14 +250,16 @@ class InfoCog(commands.Cog, name="Info"):
         
         # Create help embed
         embed = create_embed(
-            "🛠️ Bot Commands Help",
+            "🛠️ UtilsBot+ Commands",
             f"Here are all available slash commands{f' in the **{category}** category' if category else ''}:",
             thumbnail=assets.BOT_AVATAR_URL
         )
         
         # Add fields for each category
         total_commands = 0
-        for cat_name, commands in command_categories.items():
+        for cat_name, cat_data in command_categories.items():
+            commands = cat_data["commands"]
+            emoji = cat_data["emoji"]
             if not commands:
                 continue
                 
@@ -272,7 +274,10 @@ class InfoCog(commands.Cog, name="Info"):
                         command_list.append(f"  └ `/{cmd.name} {subcmd.name}` - {subcmd.description}")
                         total_commands += 1
                 else:  # Regular command
-                    command_list.append(f"`/{cmd.name}` - {cmd.description}")
+                    # Check if it's a developer-only command
+                    is_dev_only = any(check.__name__ == 'dev_only' for check in getattr(cmd, 'checks', []))
+                    lock_emoji = "🔒 " if is_dev_only else ""
+                    command_list.append(f"{lock_emoji}`/{cmd.name}` - {cmd.description}")
                     total_commands += 1
             
             if command_list:
@@ -298,10 +303,10 @@ class InfoCog(commands.Cog, name="Info"):
                     
                     # Add fields for each chunk
                     for i, chunk in enumerate(chunks):
-                        field_name = f"📂 {cat_name}" if i == 0 else f"📂 {cat_name} (cont.)"
+                        field_name = f"{emoji} {cat_name}" if i == 0 else f"{emoji} {cat_name} (cont.)"
                         embed.add_field(name=field_name, value=chunk, inline=False)
                 else:
-                    embed.add_field(name=f"📂 {cat_name}", value=command_text, inline=False)
+                    embed.add_field(name=f"{emoji} {cat_name}", value=command_text, inline=False)
         
         # Add footer with additional information
         embed.set_footer(
@@ -311,12 +316,24 @@ class InfoCog(commands.Cog, name="Info"):
         # Add usage information
         if not category:
             embed.add_field(
-                name="💡 How to Use",
+                name="💡 How to Use Commands",
                 value=(
-                    "• Type `/` to see all available commands\n"
-                    "• Use `/help <category>` to filter commands\n"
-                    "• Commands marked with 🔒 require special permissions\n"
-                    "• Use `/info` for general bot information"
+                    "• Type `/` in chat to see all available commands\n"
+                    "• Use `/help <category>` to filter commands by category\n"
+                    "• Commands marked with 🔒 require developer permissions\n"
+                    "• Use `/info` for general bot information and stats"
+                ),
+                inline=False
+            )
+            
+            # Add links to documentation
+            embed.add_field(
+                name="📚 Documentation & Support",
+                value=(
+                    "• [Commands Reference](https://github.com/utils-bot/utils-bot-plus/wiki/Commands-Reference)\n"
+                    "• [User Guide](https://github.com/utils-bot/utils-bot-plus/wiki/For-Users)\n"
+                    "• [FAQ & Troubleshooting](https://github.com/utils-bot/utils-bot-plus/wiki/FAQ)\n"
+                    "• [Report Issues](https://github.com/utils-bot/utils-bot-plus/issues)"
                 ),
                 inline=False
             )
