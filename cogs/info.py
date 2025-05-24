@@ -521,6 +521,144 @@ class InfoCog(commands.Cog, name="Info"):
                 "An error occurred while checking the whitelist"
             )
             await interaction.followup.send(embed=embed)
+    
+    @app_commands.command(name="invite", description="Generate an invite link for the bot")
+    @app_commands.describe(
+        permissions="Permission level for the invite link",
+        ephemeral="Whether to show the invite only to you"
+    )
+    @app_commands.choices(permissions=[
+        app_commands.Choice(name="Recommended (Full Functionality)", value="recommended"),
+        app_commands.Choice(name="Minimal (Basic Commands)", value="minimal"),
+        app_commands.Choice(name="Network Tools", value="network"),
+        app_commands.Choice(name="Administrator", value="admin")
+    ])
+    async def invite_command(
+        self, 
+        interaction: discord.Interaction,
+        permissions: str = "recommended",
+        ephemeral: bool = True
+    ):
+        """Generate a bot invite link with specified permissions"""
+        
+        # Get bot's application ID
+        if not self.bot.application_id:
+            embed = create_error_embed(
+                "Application ID Missing",
+                "Cannot generate invite link: Bot application ID not available"
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return
+        
+        # Define permission values
+        permission_sets = {
+            "minimal": {
+                "value": (
+                    (1 << 10) |  # View Channels
+                    (1 << 11) |  # Send Messages
+                    (1 << 14) |  # Embed Links
+                    (1 << 15) |  # Attach Files
+                    (1 << 16) |  # Read Message History
+                    (1 << 18) |  # Use External Emojis
+                    (1 << 31)    # Use Slash Commands
+                ),
+                "description": "Basic functionality - view channels, send messages, use slash commands",
+                "emoji": "🔧"
+            },
+            "recommended": {
+                "value": (
+                    (1 << 10) |  # View Channels
+                    (1 << 11) |  # Send Messages
+                    (1 << 13) |  # Manage Messages
+                    (1 << 14) |  # Embed Links
+                    (1 << 15) |  # Attach Files
+                    (1 << 16) |  # Read Message History
+                    (1 << 17) |  # Add Reactions
+                    (1 << 18) |  # Use External Emojis
+                    (1 << 19) |  # Use External Stickers
+                    (1 << 31) |  # Use Slash Commands
+                    (1 << 34) |  # Manage Threads
+                    (1 << 35) |  # Create Public Threads
+                    (1 << 37)    # Use External Stickers
+                ),
+                "description": "Full bot functionality - all features enabled",
+                "emoji": "⭐"
+            },
+            "network": {
+                "value": (
+                    (1 << 10) |  # View Channels
+                    (1 << 11) |  # Send Messages
+                    (1 << 14) |  # Embed Links
+                    (1 << 15) |  # Attach Files (for screenshots)
+                    (1 << 16) |  # Read Message History
+                    (1 << 18) |  # Use External Emojis
+                    (1 << 31)    # Use Slash Commands
+                ),
+                "description": "Network tools - screenshots, IP lookup, website analysis",
+                "emoji": "🌐"
+            },
+            "admin": {
+                "value": (1 << 3),  # Administrator
+                "description": "Full server access - all permissions granted",
+                "emoji": "👑"
+            }
+        }
+        
+        perm_set = permission_sets.get(permissions, permission_sets["recommended"])
+        
+        # Generate invite URL
+        base_url = "https://discord.com/api/oauth2/authorize"
+        invite_url = (
+            f"{base_url}?"
+            f"client_id={self.bot.application_id}&"
+            f"permissions={perm_set['value']}&"
+            f"scope=bot%20applications.commands"
+        )
+        
+        # Create embed
+        embed = create_embed(
+            f"{perm_set['emoji']} Bot Invite Link",
+            f"Click the link below to add **{self.bot.user.display_name}** to your server!"
+        )
+        
+        embed.add_field(
+            name="🔗 Invite Link",
+            value=f"[**Add {self.bot.user.display_name} to Server**]({invite_url})",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="📋 Permission Level",
+            value=f"**{permissions.title()}**\n{perm_set['description']}",
+            inline=False
+        )
+        
+        embed.add_field(
+            name="📝 Instructions",
+            value=(
+                "1. Click the invite link above\n"
+                "2. Select your Discord server\n"
+                "3. Review and authorize the permissions\n"
+                "4. The bot will be added to your server!"
+            ),
+            inline=False
+        )
+        
+        embed.add_field(
+            name="⚠️ Requirements",
+            value="You need **Manage Server** permission in the target server",
+            inline=False
+        )
+        
+        embed.set_footer(
+            text="Use /invite permissions:<level> to generate different permission levels"
+        )
+        
+        # Add bot avatar as thumbnail
+        if self.bot.user.avatar:
+            embed.set_thumbnail(url=self.bot.user.avatar.url)
+        
+        await interaction.response.send_message(embed=embed, ephemeral=ephemeral)
 
 
 async def setup(bot):

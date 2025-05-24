@@ -13,6 +13,7 @@ class Settings(BaseModel):
     
     # Bot settings
     bot_token: str = os.getenv("BOT_TOKEN", "")
+    bot_id: Optional[str] = os.getenv("BOT_ID") or os.getenv("APPLICATION_ID")
     bot_prefix: str = os.getenv("BOT_PREFIX", "!")
     bot_support_server: str = os.getenv("BOT_SUPPORT_SERVER", "")
     auto_sync_commands: bool = os.getenv("AUTO_SYNC_COMMANDS", "true").lower() == "true"

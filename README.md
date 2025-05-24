@@ -50,10 +50,13 @@ python main.py
 ```
 
 ### First Steps
-1. Invite bot to your server with `applications.commands` scope
-2. Use `/info` to verify bot is working
-3. Try `/help` to see all available commands
-4. Use `/sync` if commands don't appear
+1. **Generate invite link**: Use `python generate_invite.py` or `/invite` command
+2. Invite bot to your server with `applications.commands` scope
+3. Use `/info` to verify bot is working
+4. Try `/help` to see all available commands
+5. Use `/sync` if commands don't appear
+
+> 💡 **Tip**: Run `python generate_invite.py --help` for different permission levels
 
 ## 🛠️ Support
 
@@ -62,7 +65,7 @@ python main.py
 - **[Bot Won't Start](../../wiki/6.-Troubleshooting#bot-wont-start)** - Token and dependency issues  
 - **[Commands Not Working](../../wiki/6.-Troubleshooting#commands-not-working)** - Permission fixes
 
-**Need help?** Join our [Discord Server](https://discord.gg/your-server) or [open an issue](../../issues).
+**Need help?** Join our [Discord Server] (soon) or [open an issue](../../issues).
 
 ## 📋 Commands Overview
 
@@ -72,6 +75,7 @@ python main.py
 | `/wordle` | Play Wordle game | `/wordle` |
 | `/screenshot` | Capture website | `/screenshot url:"google.com"` |
 | `/totp` | Generate 2FA code | `/totp secret:"YOUR2FA"` |
+| `/invite` | Generate bot invite | `/invite permissions:"recommended"` |
 | `/info` | Bot statistics | `/info` |
 | `/help` | Command help | `/help category:"AI"` |
 
