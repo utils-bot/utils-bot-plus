@@ -1,0 +1,79 @@
+# App.json for Heroku deployment
+{
+  "name": "UtilsBot+",
+  "description": "A modern, feature-rich Discord bot with AI integration, games, and utilities",
+  "website": "https://github.com/yourusername/utils-bot-plus",
+  "repository": "https://github.com/yourusername/utils-bot-plus",
+  "logo": "https://cdn.discordapp.com/app-icons/your-bot-id/icon.png",
+  "success_url": "/health",
+  "keywords": [
+    "discord",
+    "bot",
+    "python",
+    "ai",
+    "utilities"
+  ],
+  "stack": "heroku-22",
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "eco"
+    }
+  },
+  "env": {
+    "BOT_TOKEN": {
+      "description": "Discord Bot Token from https://discord.com/developers/applications",
+      "required": true
+    },
+    "DEV_IDS": {
+      "description": "Comma-separated Discord User IDs of developers",
+      "required": true
+    },
+    "GEMINI_API_KEY": {
+      "description": "Google Gemini API key for AI features (optional)",
+      "required": false
+    },
+    "SECRET_KEY": {
+      "description": "Secret key for encryption",
+      "generator": "secret"
+    },
+    "AUTO_SYNC_COMMANDS": {
+      "description": "Auto-sync Discord commands on startup",
+      "value": "true"
+    },
+    "DEBUG": {
+      "description": "Enable debug mode",
+      "value": "false"
+    },
+    "LOG_LEVEL": {
+      "description": "Logging level",
+      "value": "INFO"
+    },
+    "ENABLE_DOCKER_SANDBOX": {
+      "description": "Enable Docker sandboxing (disabled for hosted services)",
+      "value": "false"
+    },
+    "ENABLE_EVAL_COMMAND": {
+      "description": "Enable eval command (disabled for security in hosted environment)",
+      "value": "false"
+    },
+    "ENABLE_RUN_COMMAND": {
+      "description": "Enable run command (disabled for security in hosted environment)",
+      "value": "false"
+    }
+  },
+  "addons": [
+    {
+      "plan": "heroku-postgresql:mini",
+      "as": "DATABASE"
+    }
+  ],
+  "scripts": {
+    "postdeploy": "python migrations/init_db.py"
+  }
+}

@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: utils-bot-plus
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main_hosted.py
+    envVars:
+      - key: BOT_TOKEN
+        sync: false  # Set this in Render dashboard
+      - key: DEV_IDS
+        sync: false  # Set this in Render dashboard
+      - key: GEMINI_API_KEY
+        sync: false  # Set this in Render dashboard
+      - key: SECRET_KEY
+        generateValue: true  # Auto-generate
+      - key: AUTO_SYNC_COMMANDS
+        value: "true"
+      - key: DEBUG
+        value: "false"
+      - key: LOG_LEVEL
+        value: "INFO"
+      - key: ENABLE_DOCKER_SANDBOX
+        value: "false"  # Disabled for hosted services
+      - key: ENABLE_EVAL_COMMAND
+        value: "false"  # Disabled for security in hosted environment
+      - key: ENABLE_RUN_COMMAND
+        value: "false"  # Disabled for security in hosted environment
+      - key: DATABASE_URL
+        value: "sqlite+aiosqlite:///data/bot.db"
+    disk:
+      name: utils-bot-data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 1
