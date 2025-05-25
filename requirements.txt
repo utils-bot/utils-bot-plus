@@ -48,3 +48,6 @@ redis>=5.0.0
 
 # Optional: PostgreSQL driver
 asyncpg>=0.29.0
+
+# Docker for sandboxing
+docker>=7.0.0

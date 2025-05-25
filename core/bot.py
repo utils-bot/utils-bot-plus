@@ -57,12 +57,32 @@ class UtilsBotPlus(commands.Bot):
         self.db = Database(settings.database_url)
         await self.db.initialize()
         
+        # Initialize sandbox image manager
+        await self.initialize_sandbox_images()
+        
         await self.load_cogs()
         
         if settings.auto_sync_commands:
             await self.sync_commands()
         
         self.logger.info("Bot setup completed")
+    
+    async def initialize_sandbox_images(self) -> None:
+        """Initialize Docker image manager for sandbox execution"""
+        try:
+            from utils.image_manager import image_manager
+            
+            self.logger.info("Initializing sandbox image manager...")
+            success = await image_manager.initialize()
+            
+            if success:
+                self.logger.info("Sandbox image manager initialized successfully")
+            else:
+                self.logger.warning("Sandbox image manager initialization failed - Docker may not be available")
+                
+        except Exception as e:
+            self.logger.error(f"Failed to initialize sandbox image manager: {e}")
+            # Don't fail bot startup if sandbox initialization fails
     
     async def load_cogs(self) -> None:
         """Load all available cogs"""

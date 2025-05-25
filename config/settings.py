@@ -56,6 +56,13 @@ class Settings(BaseModel):
     enable_ai_commands: bool = os.getenv("ENABLE_AI_COMMANDS", "true").lower() == "true"
     enable_system_commands: bool = os.getenv("ENABLE_SYSTEM_COMMANDS", "true").lower() == "true"
     
+    # Sandboxing
+    enable_docker_sandbox: bool = os.getenv("ENABLE_DOCKER_SANDBOX", "true").lower() == "true"
+    sandbox_timeout: int = int(os.getenv("SANDBOX_TIMEOUT", "10"))
+    sandbox_memory_limit: str = os.getenv("SANDBOX_MEMORY_LIMIT", "128m")
+    enable_eval_command: bool = os.getenv("ENABLE_EVAL_COMMAND", "true").lower() == "true"
+    enable_run_command: bool = os.getenv("ENABLE_RUN_COMMAND", "true").lower() == "true"
+    
     # Cache
     redis_url: Optional[str] = os.getenv("REDIS_URL")
     cache_ttl: int = int(os.getenv("CACHE_TTL", "300"))
